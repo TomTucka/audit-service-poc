@@ -11,15 +11,15 @@ func main() {
 		fmt.Println("Usage: audit-service -post-timestream")
 	}
 
-	var postTimeStream bool
-
-	flag.BoolVar(&postTimeStream, "post-timestream", false, "Post to timestream")
+	postTimestream := flag.Bool("post-timestream", false, "Post to timestream")
 	flag.Parse()
+	fmt.Println("postTimeStream has value ", *postTimestream)
 
-	if postTimeStream {
+
+	if *postTimestream {
 		fmt.Println("Posting timestream")
 		cmd.PostTimestream()
 	} else {
-		fmt.Println("Unable to post to timestream")
+		fmt.Println("Unable to post timestream")
 	}
 }
