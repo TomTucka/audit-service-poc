@@ -42,7 +42,7 @@ func PostTimestream() {
 	creds := stscreds.NewCredentials(sess, RoleArn)
 	awsConfig := aws.Config{Credentials: creds, Region: aws.String("eu-west-1")}
 
-	se:= newSiriusEvent(100, 1,"INS", "TaskCreated", 144, "Task")
+	se:= newSiriusEvent(100, 1,"INSERT", "Opg\\Core\\Model\\Event\\Common\\TaskCreated", 144, "Opg\\Core\\Model\\Entity\\Task\\Task")
 
 	svc := timestreamwrite.New(sess, &awsConfig)
 
@@ -57,27 +57,31 @@ func PostTimestream() {
 				Dimensions: []*timestreamwrite.Dimension{
 					&timestreamwrite.Dimension{
 						Name:  aws.String("User_ID"),
-						Value: aws.String(string(rune(se.userID))),
+						Value: aws.String(strconv.Itoa(se.userID)),
 					},
 					&timestreamwrite.Dimension{
 						Name:  aws.String("Person_ID"),
-						Value: aws.Int(se.personID),
+						Value: aws.String(strconv.Itoa(se.personID)),
 					},
 					&timestreamwrite.Dimension{
-						Name:  aws.String("Event_Class"),
-						Value: aws.String(se.eventClass),
+						Name:  aws.String("Event_Type"),
+						Value: aws.String(se.eventType),
 					},
 					&timestreamwrite.Dimension{
 						Name:  aws.String("Source_Entity_ID"),
-						Value: aws.String(string(rune(se.sourceEntityID))),
+						Value: aws.String(strconv.Itoa(se.sourceEntityID)),
 					},
 					&timestreamwrite.Dimension{
 						Name:  aws.String("Source_Entity_Class"),
 						Value: aws.String(se.sourceEntityClass),
 					},
+					&timestreamwrite.Dimension{
+						Name:  aws.String("Event_Class"),
+						Value: aws.String(se.eventClass),
+					},
 				},
-				MeasureName:      aws.String("Event_Type"),
-				MeasureValue:     aws.String(se.eventType),
+				MeasureName:      aws.String("Event"),
+				MeasureValue:     aws.String("Test"),
 				MeasureValueType: aws.String("VARCHAR"),
 				Time:             aws.String(strconv.FormatInt(currentTimeInSeconds, 10)),
 				TimeUnit:         aws.String("SECONDS"),
