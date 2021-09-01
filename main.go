@@ -4,17 +4,10 @@ import (
 	"flag"
 	"fmt"
 	"github.com/tomtucka/audit-service-poc/cmd"
-	"html/template"
+	"log"
 	"net/http"
-	"os"
+	"strings"
 )
-
-var tpl = template.Must(template.ParseFiles("index.html"))
-
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	//w.Write([]byte("<h1>Hello World!</h1>"))
-	tpl.Execute(w, nil)
-}
 
 func main() {
 	flag.Usage = func() {
@@ -29,7 +22,7 @@ func main() {
 
 	if *postTimestream {
 		sum := 1
-		for sum < 10000000 {
+		for sum < 100 {
 			fmt.Println(sum)
 			cmd.PostTimestream()
 			sum += 1
@@ -37,18 +30,34 @@ func main() {
 	}
 
 	if *getTimestream {
-		cmd.GetTimestream()
+		cmd.GetTimestream("20")
 	}
 
 	if *serve {
-		port := os.Getenv("PORT")
-		if port == "" {
-			port = "4000"
-		}
-
-		mux := http.NewServeMux()
-
-		mux.HandleFunc("/", indexHandler)
-		http.ListenAndServe(":"+port, mux)
+		handleRequests()
 	}
+}
+
+func handleRequests() {
+	http.HandleFunc("/", homePage)
+	http.HandleFunc("/sample", returnGetTimeStreamResults)
+	http.HandleFunc("/deputy/", returnResultById)
+	log.Fatal(http.ListenAndServe(":3000", nil))
+}
+
+func homePage(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w, "Welcome to the HomePage!")
+	fmt.Println("Endpoint Hit: homePage")
+}
+
+func returnGetTimeStreamResults(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Endpoint Hit: timestream response")
+	fmt.Fprint(w, cmd.GetTimestream("20"))
+}
+
+func returnResultById(w http.ResponseWriter, r *http.Request){
+	fmt.Println("Endpoint Hit: timestream by deputy id response")
+	id := strings.TrimPrefix(r.URL.Path, "/deputy/")
+	fmt.Println(id)
+	fmt.Fprint(w, cmd.GetTimestream(id))
 }
